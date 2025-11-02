@@ -1,0 +1,26 @@
+[project]
+name = "schema-automation"
+version = "0.1.0"
+description = "Herramientas para automatizar la generación de schema.org para Naranja X"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "beautifulsoup4",
+    "html5lib",
+    "jinja2",
+    "lxml",
+    "pandas",
+    "requests",
+    "streamlit",
+    "w3lib",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "requests-mock",
+]
+
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
