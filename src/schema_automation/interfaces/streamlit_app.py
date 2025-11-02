@@ -57,6 +57,14 @@ def main() -> None:
         "Genera grafos schema.org a partir de una URL pública sin necesidad de notebooks."
     )
 
+    include_offer = st.checkbox("Incluir OfferCatalog", key="include_offer_toggle")
+    offer_label = st.selectbox(
+        "Catálogo",
+        options=[label for label, _ in OFFER_CATALOG_OPTIONS],
+        disabled=not include_offer,
+        key="offer_label_select",
+    )
+
     with st.form("schema_form"):
         url = st.text_input("URL", placeholder="https://www.naranjax.com")
         nombre = st.text_input("Nombre legible", placeholder="Nombre del producto o servicio")
@@ -64,12 +72,6 @@ def main() -> None:
             "Tipo de schema",
             options=[label for label, _ in SCHEMA_OPTIONS],
             index=_schema_default_index("payment_card"),
-        )
-        include_offer = st.checkbox("Incluir OfferCatalog")
-        offer_label = st.selectbox(
-            "Catálogo",
-            options=[label for label, _ in OFFER_CATALOG_OPTIONS],
-            disabled=not include_offer,
         )
         output_mode = st.radio(
             "Formato de salida",
@@ -95,6 +97,8 @@ def main() -> None:
         kwargs["offer_catalog_key"] = offer_key
 
     as_script = output_mode == "Script HTML"
+    if not as_script:
+        kwargs["schema_only"] = True
 
     try:
         result = generate_schema(
