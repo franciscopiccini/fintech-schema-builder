@@ -152,6 +152,7 @@ def generate_schema(
     csv_path: str = "extracciones.csv",
     jsonl_path: str = "schemas.jsonl",
     as_script: bool = False,
+    schema_only: bool = False,
 ):
     record = build_schema_from_url(
         url,
@@ -173,4 +174,6 @@ def generate_schema(
         save_outputs(record, csv_path=csv_path, jsonl_path=jsonl_path)
     if as_script:
         return as_script_tag(record.schema)
+    if schema_only:
+        return record.schema
     return record.to_dict()

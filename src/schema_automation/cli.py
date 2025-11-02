@@ -47,6 +47,11 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Devuelve la salida lista para embeber en HTML.",
     )
+    parser.add_argument(
+        "--schema-only",
+        action="store_true",
+        help="Devuelve únicamente el grafo schema.org, sin metadatos auxiliares.",
+    )
     return parser
 
 
@@ -60,7 +65,7 @@ def main(argv: list[str] | None = None) -> int:
         parser.error(str(exc))
         return 2
 
-    kwargs: Dict[str, Any] = {"as_script": args.script}
+    kwargs: Dict[str, Any] = {"as_script": args.script, "schema_only": args.schema_only}
     kwargs.update(overrides)
     if args.offer_catalog_key:
         kwargs["offer_catalog_key"] = args.offer_catalog_key

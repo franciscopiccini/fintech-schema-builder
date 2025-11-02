@@ -19,11 +19,20 @@ record = generate_schema(
     schema_type="payment_card",
 )
 print(record["schema"])
+
+schema = generate_schema(
+    "https://www.naranjax.com",
+    "Naranja X",
+    schema_type="payment_card",
+    schema_only=True,
+)
+print(schema)
 ```
 
 ### CLI
 
 ```bash
+python -m schema_automation.cli https://www.naranjax.com "Naranja X" --schema-type payment_card --schema-only
 python -m schema_automation.cli https://www.naranjax.com "Naranja X" --schema-type payment_card --script
 ```
 
