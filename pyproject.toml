@@ -5,20 +5,22 @@ description = "Herramientas para automatizar la generación de schema.org para N
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "beautifulsoup4",
-    "html5lib",
-    "jinja2",
-    "lxml",
-    "pandas",
-    "requests",
-    "streamlit",
-    "w3lib",
+    "beautifulsoup4>=4.12.0,<5.0",
+    "html5lib>=1.1,<2.0",
+    "jinja2>=3.1.0,<4.0",
+    "lxml>=5.0.0,<6.0",
+    "pandas>=2.0.0,<3.0",
+    "requests>=2.31.0,<3.0",
+    "requests-cache>=1.1.0,<2.0",
+    "streamlit>=1.30.0,<2.0",
+    "tenacity>=8.2.0,<9.0",
+    "w3lib>=2.1.0,<3.0",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest",
-    "requests-mock",
+    "pytest>=7.4.0,<9.0",
+    "requests-mock>=1.11.0,<2.0",
 ]
 
 [build-system]

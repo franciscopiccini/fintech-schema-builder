@@ -16,6 +16,7 @@ from ..infrastructure.http import fetch_html
 from ..infrastructure.persistence import as_script_tag, save_outputs
 from ..models import ExtractionResult, SchemaContext, SchemaRecord
 from ..schema import SCHEMA_BUILDERS, build_offer_catalog_node
+from ..validation import SchemaValidationResult, validate_schema
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +57,34 @@ def build_schema_from_url(
     blog_defaults: Optional[Dict[str, Any]] = None,
     offer_catalog_key: Optional[str] = None,
     aggregate_rating: Optional[Dict[str, Any]] = None,
+    validate: bool = False,
 ) -> SchemaRecord:
+    """
+    Construye un schema JSON-LD a partir de una URL.
+
+    Args:
+        url: URL de la página a procesar.
+        nombre: Nombre legible del producto/servicio.
+        schema_type: Tipo de schema a generar.
+        price_spec: Especificaciones de precio opcionales.
+        bank_defaults: Configuración para BankAccount.
+        payment_service_defaults: Configuración para PaymentService.
+        insurance_defaults: Configuración para InsuranceAgency.
+        loan_defaults: Configuración para LoanOrCredit.
+        financial_product_defaults: Configuración para FinancialProduct.
+        investment_defaults: Configuración para InvestmentOrDeposit.
+        blog_defaults: Configuración para BlogPosting.
+        offer_catalog_key: Clave del catálogo de ofertas a incluir.
+        aggregate_rating: Rating agregado personalizado.
+        validate: Si True, valida el schema generado.
+
+    Returns:
+        SchemaRecord con los datos extraídos y el schema generado.
+
+    Raises:
+        ValueError: Si el schema_type no es válido.
+        ValidationError: Si validate=True y el schema no es válido.
+    """
     html, base_url, final_url = fetch_html(url)
     soup = ensure_soup(html)
     meta = extract_basic_meta(html, base_url=base_url, soup=soup)
@@ -116,6 +144,17 @@ def build_schema_from_url(
 
     schema_graph = {"@context": "https://schema.org", "@graph": graph_nodes}
 
+    # Validar si se solicita
+    if validate:
+        validation_result = validate_schema(schema_graph)
+        if not validation_result.is_valid:
+            error_msgs = [str(e) for e in validation_result.errors[:5]]
+            logger.warning(
+                "Schema validation failed for %s: %s",
+                final_url,
+                "; ".join(error_msgs),
+            )
+
     extracted = ExtractionResult(
         title=meta.get("title", ""),
         description=description_text,
@@ -153,7 +192,39 @@ def generate_schema(
     jsonl_path: str = "schemas.jsonl",
     as_script: bool = False,
     schema_only: bool = False,
-):
+    validate: bool = False,
+) -> Dict[str, Any] | str | SchemaValidationResult:
+    """
+    Genera un schema JSON-LD con opciones de formato y persistencia.
+
+    Args:
+        url: URL de la página a procesar.
+        nombre: Nombre legible del producto/servicio.
+        schema_type: Tipo de schema a generar.
+        price_spec: Especificaciones de precio opcionales.
+        bank_defaults: Configuración para BankAccount.
+        payment_service_defaults: Configuración para PaymentService.
+        insurance_defaults: Configuración para InsuranceAgency.
+        loan_defaults: Configuración para LoanOrCredit.
+        financial_product_defaults: Configuración para FinancialProduct.
+        investment_defaults: Configuración para InvestmentOrDeposit.
+        blog_defaults: Configuración para BlogPosting.
+        offer_catalog_key: Clave del catálogo de ofertas a incluir.
+        aggregate_rating: Rating agregado personalizado.
+        save: Si True, guarda los resultados en archivos.
+        csv_path: Ruta del archivo CSV de salida.
+        jsonl_path: Ruta del archivo JSONL de salida.
+        as_script: Si True, retorna el schema como tag script HTML.
+        schema_only: Si True, retorna solo el schema sin metadatos.
+        validate: Si True, valida el schema y retorna el resultado.
+
+    Returns:
+        Dependiendo de los parámetros:
+        - Si validate=True: SchemaValidationResult
+        - Si as_script=True: String con tag script HTML
+        - Si schema_only=True: Dict con el schema JSON-LD
+        - Por defecto: Dict con todos los datos del record
+    """
     record = build_schema_from_url(
         url,
         nombre,
@@ -168,10 +239,16 @@ def generate_schema(
         blog_defaults=blog_defaults,
         offer_catalog_key=offer_catalog_key,
         aggregate_rating=aggregate_rating,
+        validate=validate,
     )
 
     if save:
         save_outputs(record, csv_path=csv_path, jsonl_path=jsonl_path)
+
+    # Si se pide solo validación, retornar el resultado
+    if validate:
+        return validate_schema(record.schema)
+
     if as_script:
         return as_script_tag(record.schema)
     if schema_only:
