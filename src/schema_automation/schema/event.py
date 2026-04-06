@@ -8,6 +8,7 @@ from ..config import default_price_valid_until
 from ..models import SchemaContext
 from .base import (
     append_organization,
+    build_faq_page,
     build_offer_node,
     build_webpage_node,
     organization_reference,
@@ -85,6 +86,10 @@ def build_event_graph(
         },
     )
     graph.append(offer)
+
+    faq_page = build_faq_page(ctx.page_url, ctx.faqs, f"{ctx.page_url}#FAQPage")
+    if faq_page:
+        graph.append(faq_page)
 
     graph.append(build_webpage_node(ctx))
 
