@@ -54,6 +54,7 @@ def build_bank_account_graph(
         "description": ctx.description,
         "areaServed": deepcopy(area_served_place),
         "provider": organization_reference("tarjeta_naranja"),
+        "mainEntityOfPage": {"@type": "WebPage", "@id": f"{ctx.page_url}#WebPage"},
         "offers": {"@id": offer_id},
     }
     graph.append(bank_account)

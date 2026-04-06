@@ -60,6 +60,7 @@ def build_insurance_agency_graph(
         "description": ctx.description,
         "areaServed": area_served,
         "url": ctx.page_url,
+        "mainEntityOfPage": {"@type": "WebPage", "@id": f"{ctx.page_url}#WebPage"},
     }
     if agency_identifier:
         agency_node["identifier"] = agency_identifier

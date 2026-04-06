@@ -61,7 +61,7 @@ def build_loan_or_credit_graph(
             organization_reference("naranja_digital"),
             organization_reference("tarjeta_naranja"),
         ],
-        "mainEntityOfPage": ctx.page_url,
+        "mainEntityOfPage": {"@type": "WebPage", "@id": f"{ctx.page_url}#WebPage"},
         "offers": {"@id": offer_id},
         "loanType": loan_type_value,
     }

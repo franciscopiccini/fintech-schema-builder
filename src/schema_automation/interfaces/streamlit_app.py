@@ -18,6 +18,7 @@ SCHEMA_OPTIONS: List[Tuple[str, str]] = [
     ("InvestmentOrDeposit", "investment_or_deposit"),
     ("InsuranceAgency", "insurance_agency"),
     ("FinancialProduct", "financial_product"),
+    ("Event", "event"),
 ]
 
 OFFER_CATALOG_OPTIONS: List[Tuple[str, str]] = [

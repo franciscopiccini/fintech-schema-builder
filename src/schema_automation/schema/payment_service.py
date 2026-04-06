@@ -43,6 +43,7 @@ def build_payment_service_graph(
         "description": ctx.description,
         "areaServed": deepcopy(area_served),
         "provider": organization_reference(provider),
+        "mainEntityOfPage": {"@type": "WebPage", "@id": f"{ctx.page_url}#WebPage"},
         "offers": {"@id": f"{ctx.page_url}#Offer"},
     }
     if ctx.image_url:

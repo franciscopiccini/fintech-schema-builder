@@ -99,6 +99,7 @@ def build_financial_product_graph(
         "description": ctx.description,
         "areaServed": area_served,
         "provider": organization_reference(provider),
+        "mainEntityOfPage": {"@type": "WebPage", "@id": f"{ctx.page_url}#WebPage"},
         "offers": {"@id": offer_id},
     }
     if ctx.image_url:

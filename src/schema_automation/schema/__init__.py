@@ -15,6 +15,7 @@ from .base import (
 from .bank_account import build_bank_account_graph
 from .blog import build_blog_posting_graph
 from .catalog import build_offer_catalog_node
+from .event import build_event_graph
 from .financial_product import build_financial_product_graph
 from .insurance import build_insurance_agency_graph
 from .investment import build_investment_or_deposit_graph
@@ -32,6 +33,7 @@ SCHEMA_BUILDERS: Dict[str, Callable[..., List[Dict[str, Any]]]] = {
     "insurance_agency": build_insurance_agency_graph,
     "financial_product": build_financial_product_graph,
     "blog_posting": build_blog_posting_graph,
+    "event": build_event_graph,
 }
 
 __all__ = [
@@ -39,6 +41,7 @@ __all__ = [
     "append_organization",
     "build_bank_account_graph",
     "build_blog_posting_graph",
+    "build_event_graph",
     "build_faq_page",
     "build_financial_product_graph",
     "build_insurance_agency_graph",

@@ -108,7 +108,7 @@ def build_investment_or_deposit_graph(
         "name": ctx.name,
         "description": ctx.description,
         "areaServed": area_served,
-        "mainEntityOfPage": ctx.page_url,
+        "mainEntityOfPage": {"@type": "WebPage", "@id": f"{ctx.page_url}#WebPage"},
         "provider": provider,
         "offers": {"@id": offer_id},
         "interestRate": {

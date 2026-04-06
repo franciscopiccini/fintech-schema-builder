@@ -17,8 +17,8 @@ def default_price_valid_until(days: int = DEFAULT_PRICE_VALIDITY_DAYS) -> str:
 
 DEFAULT_AGG_RATING = {
     "@type": "AggregateRating",
-    "ratingValue": 4.6,
-    "ratingCount": 991000,
+    "ratingValue": 4.5,
+    "ratingCount": 1070000,
     "bestRating": 5,
     "worstRating": 1,
 }

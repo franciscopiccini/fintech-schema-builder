@@ -32,7 +32,7 @@ def build_payment_card_graph(ctx: SchemaContext, **_) -> List[Dict[str, Any]]:
         "description": ctx.description,
         "areaServed": "AR",
         "provider": [organization_reference("tarjeta_naranja")],
-        "mainEntityOfPage": ctx.page_url,
+        "mainEntityOfPage": {"@type": "WebPage", "@id": f"{ctx.page_url}#WebPage"},
         "offers": {"@id": offer_id},
     }
     if ctx.image_url:
