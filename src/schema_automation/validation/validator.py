@@ -41,6 +41,7 @@ VALID_SCHEMA_TYPES: Set[str] = {
     "Audience",
     "PropertyValue",
     "WebSite",
+    "Thing",
 }
 
 # Campos requeridos por tipo de schema

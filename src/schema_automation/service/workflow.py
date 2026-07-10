@@ -9,7 +9,7 @@ from typing import Any, Dict, Optional
 
 from bs4 import BeautifulSoup, Tag
 
-from ..config import DEFAULT_AGG_RATING
+from ..config import DEFAULT_AGG_RATING, TOPICAL_ENTITIES
 from ..extraction import extract_basic_meta, extract_faqs, extract_flat_text
 from ..extraction.html import ensure_soup
 from ..infrastructure.http import fetch_html
@@ -40,6 +40,38 @@ def _select_body_node(soup: BeautifulSoup) -> Optional[Tag]:
         ),
         None,
     )
+
+
+def _attach_topical_entity(graph_nodes: list, schema_key: str) -> None:
+    """Adjunta la entidad temática (`about`) al nodo WebPage del grafo.
+
+    `about`/`mentions` son propiedades exclusivas de CreativeWork, por eso solo
+    se aplican a WebPage (nunca a Product/PaymentCard/etc.). No hace nada si el
+    tipo no tiene entidad mapeada o si el grafo no incluye un nodo WebPage.
+    """
+    entity = TOPICAL_ENTITIES.get(schema_key)
+    if not entity:
+        return
+    webpage = next(
+        (
+            node
+            for node in graph_nodes
+            if isinstance(node, dict) and node.get("@type") == "WebPage"
+        ),
+        None,
+    )
+    if webpage is None:
+        return
+    about = {"@type": "Thing", **deepcopy(entity)}
+    existing = webpage.get("about")
+    if existing is None:
+        webpage["about"] = about
+    elif isinstance(existing, list):
+        if not any(item.get("@id") == about["@id"] for item in existing if isinstance(item, dict)):
+            existing.append(about)
+    elif isinstance(existing, dict):
+        if existing.get("@id") != about["@id"]:
+            webpage["about"] = [existing, about]
 
 
 def build_schema_from_url(
@@ -128,6 +160,8 @@ def build_schema_from_url(
         investment_defaults=investment_defaults,
         blog_defaults=blog_defaults,
     )
+
+    _attach_topical_entity(graph_nodes, key)
 
     if offer_catalog_key:
         catalog_node, provider_org = build_offer_catalog_node(context.page_url, offer_catalog_key)

@@ -25,6 +25,17 @@ DEFAULT_AGG_RATING = {
 
 DEFAULT_LANGUAGE = "es-AR"
 
+# Entidades de identidad de la organización (sameAs) --------------------------
+# Solo identificadores estables. Wikidata (Q124313742) es el sucesor oficial de
+# Freebase; Wikipedia es estable. Se descartan a propósito los Google Knowledge
+# Graph IDs (Google los fusiona/purga) y los Freebase /m/ (discontinuados 2016).
+# Las tres razones sociales comparten CUIT y resuelven a la misma entidad.
+ORG_SAME_AS = [
+    "https://www.wikidata.org/wiki/Q124313742",
+    "https://es.wikipedia.org/wiki/Naranja_X",
+    "https://en.wikipedia.org/wiki/Naranja_X",
+]
+
 # Organizaciones y direcciones -------------------------------------------------
 
 ORGANIZATIONS: Dict[str, Dict[str, object]] = {
@@ -39,7 +50,7 @@ ORGANIZATIONS: Dict[str, Dict[str, object]] = {
             "url": "https://images.ctfassets.net/yxlyq25bynna/1IxKUBv3dtISflaWQoSIZW/11e239808ff23ee64b26ba44bfcd93a0/Logo_NX.jpeg",
             "contentUrl": "https://images.ctfassets.net/yxlyq25bynna/1IxKUBv3dtISflaWQoSIZW/11e239808ff23ee64b26ba44bfcd93a0/Logo_NX.jpeg",
         },
-        "sameAs": [],
+        "sameAs": list(ORG_SAME_AS),
         "identifier": {
             "@type": "PropertyValue",
             "propertyID": "CUIT",
@@ -57,7 +68,7 @@ ORGANIZATIONS: Dict[str, Dict[str, object]] = {
             "url": "https://images.ctfassets.net/yxlyq25bynna/1IxKUBv3dtISflaWQoSIZW/11e239808ff23ee64b26ba44bfcd93a0/Logo_NX.jpeg",
             "contentUrl": "https://images.ctfassets.net/yxlyq25bynna/1IxKUBv3dtISflaWQoSIZW/11e239808ff23ee64b26ba44bfcd93a0/Logo_NX.jpeg",
         },
-        "sameAs": [],
+        "sameAs": list(ORG_SAME_AS),
         "identifier": {
             "@type": "PropertyValue",
             "propertyID": "CUIT",
@@ -76,6 +87,7 @@ ORGANIZATIONS: Dict[str, Dict[str, object]] = {
             "contentUrl": "https://images.ctfassets.net/yxlyq25bynna/1IxKUBv3dtISflaWQoSIZW/11e239808ff23ee64b26ba44bfcd93a0/Logo_NX.jpeg",
         },
         "sameAs": [
+            *ORG_SAME_AS,
             "https://www.linkedin.com/company/naranja-x/",
             "https://twitter.com/naranjax",
         ],
@@ -116,6 +128,47 @@ WEBPAGE_DEFAULTS = {
         "@id": "https://www.naranjax.com/#website",
     },
     "publisher": {"@id": ORGANIZATIONS["tarjeta_naranja"]["@id"]},
+}
+
+# Entidades temáticas por tipo de schema (about de la WebPage) ----------------
+# Cada concepto es una entidad de Wikidata verificada (sentido correcto elegido
+# a mano) con su artículo de Wikipedia ES cuando existe. Se adjuntan como `about`
+# al nodo WebPage para dar a los crawlers contexto semántico sin más contenido en
+# página. Solo Wikidata + Wikipedia (identificadores estables).
+# Se omiten a propósito:
+#   - payment_service: sin entidad de Wikidata con sentido limpio.
+#   - blog_posting: el `about` de un artículo es su tema real, no un concepto genérico.
+TOPICAL_ENTITIES: Dict[str, Dict[str, str]] = {
+    "payment_card": {
+        "@id": "https://www.wikidata.org/wiki/Q161380",
+        "name": "Tarjeta de crédito",
+        "sameAs": "https://es.wikipedia.org/wiki/Tarjeta_de_cr%C3%A9dito",
+    },
+    "loan_or_credit": {
+        "@id": "https://www.wikidata.org/wiki/Q182076",
+        "name": "Crédito",
+        "sameAs": "https://es.wikipedia.org/wiki/Cr%C3%A9dito",
+    },
+    "bank_account": {
+        "@id": "https://www.wikidata.org/wiki/Q676459",
+        "name": "Cuenta bancaria",
+        "sameAs": "https://es.wikipedia.org/wiki/Cuenta_bancaria",
+    },
+    "investment_or_deposit": {
+        "@id": "https://www.wikidata.org/wiki/Q4290",
+        "name": "Inversión",
+        "sameAs": "https://es.wikipedia.org/wiki/Inversi%C3%B3n",
+    },
+    "insurance_agency": {
+        "@id": "https://www.wikidata.org/wiki/Q43183",
+        "name": "Seguro",
+        "sameAs": "https://es.wikipedia.org/wiki/Seguro",
+    },
+    "financial_product": {
+        # Q15809678 no tiene artículo en Wikipedia ES → sin sameAs.
+        "@id": "https://www.wikidata.org/wiki/Q15809678",
+        "name": "Producto financiero",
+    },
 }
 
 # Defaults de productos -------------------------------------------------------
