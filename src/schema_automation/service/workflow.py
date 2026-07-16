@@ -7,10 +7,8 @@ import re
 from copy import deepcopy
 from typing import Any, Dict, Optional
 
-from bs4 import BeautifulSoup, Tag
-
 from ..config import DEFAULT_AGG_RATING, TOPICAL_ENTITIES
-from ..extraction import extract_basic_meta, extract_faqs, extract_flat_text
+from ..extraction import extract_basic_meta, extract_body_text, extract_faqs
 from ..extraction.html import ensure_soup
 from ..infrastructure.http import fetch_html
 from ..infrastructure.persistence import as_script_tag, save_outputs
@@ -23,23 +21,6 @@ logger = logging.getLogger(__name__)
 
 def _schema_type_key(schema_type: str) -> str:
     return re.sub(r"(?<!^)(?=[A-Z])", "_", schema_type).lower().replace("-", "_").strip()
-
-
-def _select_body_node(soup: BeautifulSoup) -> Optional[Tag]:
-    candidates = [
-        soup.select_one("article"),
-        soup.select_one("main"),
-        soup.select_one("[role='main']"),
-        soup.body,
-    ]
-    return next(
-        (
-            candidate
-            for candidate in candidates
-            if isinstance(candidate, Tag) and candidate.get_text(strip=True)
-        ),
-        None,
-    )
 
 
 def _attach_topical_entity(graph_nodes: list, schema_key: str) -> None:
@@ -123,8 +104,7 @@ def build_schema_from_url(
 
     faqs = extract_faqs(soup)
 
-    body_node = _select_body_node(soup)
-    body_text = extract_flat_text(body_node) if body_node else ""
+    body_text = extract_body_text(soup)
 
     image_url = meta.get("image", "") or ""
     description_text = meta.get("description", "") or ""
