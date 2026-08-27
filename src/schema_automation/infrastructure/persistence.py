@@ -63,7 +63,35 @@ def save_outputs(
         )
 
 
+#: Caracteres que quedan como escapes Unicode dentro del ``<script>``.
+#:
+#: Googlebot aplica un único pass de HTML unescaping al leer JSON-LD y exige
+#: escaping estándar de JSON (RFC 8259 §7). Con estos tres caracteres crudos
+#: pasan dos cosas: un ``</script>`` dentro de un valor trunca la etiqueta
+#: entera (la página queda sin structured data), y cualquier entidad residual
+#: —``&amp;``, ``&lt;b&gt;``— se desenrolla un nivel más, cambiando el texto
+#: que Google indexa respecto del que se generó. Escapados como ``\uXXXX`` el
+#: payload sigue siendo JSON válido y es inmune a ambos efectos.
+SCRIPT_UNICODE_ESCAPES = {
+    "<": "\\u003C",
+    ">": "\\u003E",
+    "&": "\\u0026",
+}
+
+
+def escape_for_script_tag(payload: str) -> str:
+    """Reemplaza ``<``, ``>`` y ``&`` por sus escapes Unicode de JSON.
+
+    Es seguro aplicarlo sobre el JSON ya serializado: la sintaxis de JSON no
+    usa ninguno de esos caracteres, así que todas las apariciones están dentro
+    de valores string.
+    """
+    for char, escaped in SCRIPT_UNICODE_ESCAPES.items():
+        payload = payload.replace(char, escaped)
+    return payload
+
+
 def as_script_tag(obj: dict, *, indent: int = 2) -> str:
     """Serializa un grafo JSON-LD como etiqueta <script> lista para embeber."""
-    payload = json.dumps(obj, ensure_ascii=False, indent=indent)
+    payload = escape_for_script_tag(json.dumps(obj, ensure_ascii=False, indent=indent))
     return f'<script type="application/ld+json">\n{payload}\n</script>'

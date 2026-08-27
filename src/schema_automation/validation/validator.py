@@ -63,6 +63,16 @@ REQUIRED_FIELDS: Dict[str, List[str]] = {
     "Answer": ["@type", "text"],
 }
 
+# Entidad HTML que sobrevivió a la extracción (venía doble-escapada en el
+# origen). Googlebot aplica un pass de unescaping al leer el JSON-LD, así que
+# el texto que indexa no es el que se generó.
+HTML_ENTITY_RE = re.compile(
+    r"&(?:[a-zA-Z][a-zA-Z0-9]{1,31}|#[0-9]{1,7}|#[xX][0-9a-fA-F]{1,6});"
+)
+
+# Secuencia que trunca la etiqueta <script type="application/ld+json">.
+SCRIPT_CLOSE_RE = re.compile(r"</\s*script", re.IGNORECASE)
+
 # Campos que deben contener URLs válidas
 URL_FIELDS: Set[str] = {
     "url",
@@ -154,6 +164,9 @@ class SchemaValidator:
 
         # Validar referencias @id
         self._validate_id_references()
+
+        # Detectar contenido que Googlebot reinterpretaría al leer el JSON-LD
+        self._validate_escaping(schema, "")
 
         is_valid = len(self._errors) == 0
         if self.strict:
@@ -280,6 +293,34 @@ class SchemaValidator:
                 for idx, item in enumerate(value):
                     if isinstance(item, dict) and "@type" in item:
                         self._validate_node(item, f"{path}.{key}[{idx}]")
+
+    def _validate_escaping(self, value: Any, path: str) -> None:
+        """Recorre los valores string buscando contenido que Google reinterpreta.
+
+        Googlebot aplica un único pass de HTML unescaping sobre el contenido del
+        ``<script type="application/ld+json">``. Un ``</script`` crudo trunca la
+        etiqueta y una entidad HTML residual se desenrolla un nivel más, así que
+        ambos casos se reportan aunque el JSON sea sintácticamente válido.
+        """
+        if isinstance(value, str):
+            if SCRIPT_CLOSE_RE.search(value):
+                self._add_warning(
+                    path,
+                    "Contiene '</script': trunca la etiqueta si no se escapa como \\u003C",
+                )
+            entity = HTML_ENTITY_RE.search(value)
+            if entity:
+                self._add_warning(
+                    path,
+                    f"Entidad HTML sin decodificar ({entity.group()}): "
+                    "Googlebot la desescapa un nivel más al leer el JSON-LD",
+                )
+        elif isinstance(value, dict):
+            for key, nested in value.items():
+                self._validate_escaping(nested, f"{path}.{key}" if path else key)
+        elif isinstance(value, list):
+            for idx, item in enumerate(value):
+                self._validate_escaping(item, f"{path}[{idx}]")
 
     def _validate_id_references(self) -> None:
         """Valida que todas las referencias @id apunten a nodos definidos."""
