@@ -73,6 +73,16 @@ def append_organization(graph: List[Dict[str, Any]], org_data: Dict[str, Any], a
         added_ids.add(org_id)
 
 
+def append_brand_organization(graph: List[Dict[str, Any]], added_ids: set):
+    """Garantiza que la marca (Naranja X) exista como nodo en el grafo.
+
+    Las emisoras la referencian por @id vía parentOrganization/brand, y el
+    WebPage vía publisher. Sin este nodo esas referencias quedan colgando y el
+    consumidor no puede resolver la entidad que concentra los sameAs.
+    """
+    append_organization(graph, deepcopy(ORGANIZATIONS["naranja_x"]), added_ids)
+
+
 def _faq_entities(faqs: List[Dict[str, str]]) -> List[Dict[str, Any]]:
     """Convierte FAQs a entidades Question/Answer de schema.org."""
     entities: List[Dict[str, Any]] = []

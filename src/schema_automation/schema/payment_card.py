@@ -7,6 +7,7 @@ from typing import Any, Dict, List
 from ..config import default_price_valid_until
 from ..models import SchemaContext
 from .base import (
+    append_brand_organization,
     append_organization,
     build_faq_page,
     build_offer_node,
@@ -77,5 +78,6 @@ def build_payment_card_graph(ctx: SchemaContext, **_) -> List[Dict[str, Any]]:
     graph.append(build_webpage_node(ctx))
 
     append_organization(graph, resolve_organization({}, "tarjeta_naranja"), added_orgs)
+    append_brand_organization(graph, added_orgs)
 
     return graph

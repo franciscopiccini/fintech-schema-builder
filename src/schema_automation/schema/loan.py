@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional
 from ..config import LOAN_OR_CREDIT_DEFAULTS, default_price_valid_until
 from ..models import SchemaContext
 from .base import (
+    append_brand_organization,
     append_organization,
     build_faq_page,
     build_offer_node,
@@ -146,5 +147,6 @@ def build_loan_or_credit_graph(
 
     append_organization(graph, resolve_organization({}, "naranja_digital"), added_orgs)
     append_organization(graph, resolve_organization({}, "tarjeta_naranja"), added_orgs)
+    append_brand_organization(graph, added_orgs)
 
     return graph

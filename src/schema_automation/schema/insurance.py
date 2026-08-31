@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional
 from ..config import INSURANCE_AGENCY_DEFAULTS, default_price_valid_until
 from ..models import SchemaContext
 from .base import (
+    append_brand_organization,
     append_organization,
     build_faq_page,
     build_offer_node,
@@ -125,6 +126,10 @@ def build_insurance_agency_graph(
 
     graph.append(build_webpage_node(ctx))
 
-    append_organization(graph, resolve_organization({"@id": agency_id}, "naranja_x"), added_orgs)
+    # No se emite una Organization extra para la agencia: resolve_organization
+    # no encuentra `agency_id` en ORGANIZATIONS y devolvía la marca con el @id
+    # pisado, duplicando el @id del nodo InsuranceAgency de arriba. La marca se
+    # emite una sola vez con su @id propio.
+    append_brand_organization(graph, added_orgs)
 
     return graph

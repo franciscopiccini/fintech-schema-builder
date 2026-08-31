@@ -15,13 +15,11 @@ def default_price_valid_until(days: int = DEFAULT_PRICE_VALIDITY_DAYS) -> str:
     return (date.today() + timedelta(days=days)).isoformat()
 
 
-DEFAULT_AGG_RATING = {
-    "@type": "AggregateRating",
-    "ratingValue": 4.5,
-    "ratingCount": 1070000,
-    "bestRating": 5,
-    "worstRating": 1,
-}
+# No hay AggregateRating por defecto a propósito. El valor que vivía acá
+# (4.5 / 1.070.000) no provenía de reviews reales y se inyectaba en todas las
+# páginas. Un rating sin respaldo verificable es motivo de acción manual por
+# structured data engañoso. Si alguna vez se emite uno, debe venir de una
+# fuente real y pasarse explícito vía el parámetro `aggregate_rating`.
 
 DEFAULT_LANGUAGE = "es-AR"
 
@@ -29,16 +27,61 @@ DEFAULT_LANGUAGE = "es-AR"
 # Solo identificadores estables. Wikidata (Q124313742) es el sucesor oficial de
 # Freebase; Wikipedia es estable. Se descartan a propósito los Google Knowledge
 # Graph IDs (Google los fusiona/purga) y los Freebase /m/ (discontinuados 2016).
-# Las tres razones sociales comparten CUIT y resuelven a la misma entidad.
+# Las tres razones sociales comparten CUIT y resuelven a la misma entidad, así
+# que las tres exponen el mismo set de perfiles oficiales.
+#
+# Perfiles sociales: todas las URLs verificadas contra la plataforma (HTTP 200 y
+# titular de la cuenta confirmado). Instagram y el canal de YouTube están además
+# declarados en Wikidata (P2003 y P2397), o sea confirmados por fuente externa.
 ORG_SAME_AS = [
+    # Identificadores de knowledge graph
     "https://www.wikidata.org/wiki/Q124313742",
     "https://es.wikipedia.org/wiki/Naranja_X",
     "https://en.wikipedia.org/wiki/Naranja_X",
+    # Perfiles sociales oficiales
+    "https://www.instagram.com/naranjax/",
+    "https://www.facebook.com/NaranjaX/",
+    "https://x.com/naranjax",
+    # URL de canal (inmutable) en lugar del handle @NaranjaX, que es renombrable.
+    "https://www.youtube.com/channel/UCMaU6V3NWWnXpdNnM6cirpQ",
+    "https://ar.linkedin.com/company/naranjax",
+    "https://www.tiktok.com/@naranjaxoficial",
 ]
 
 # Organizaciones y direcciones -------------------------------------------------
+# Modelo marca / emisoras. Hay DOS razones sociales reales (Tarjeta Naranja y
+# Naranja Digital), cada una con su CUIT propio. "Naranja X" no es una tercera
+# sociedad: es la marca comercial que representa a ambas, y es la entidad a la
+# que apuntan Wikidata, Wikipedia y los perfiles sociales.
+#
+# Por eso el sameAs completo vive SOLO en la marca: el Instagram es de Naranja X,
+# no de "Tarjeta Naranja S.A.U.". Las emisoras se identifican por su CUIT y se
+# vinculan a la marca por parentOrganization, sin heredar los perfiles sociales.
+
+_LOGO_URL = "https://images.ctfassets.net/yxlyq25bynna/1IxKUBv3dtISflaWQoSIZW/11e239808ff23ee64b26ba44bfcd93a0/Logo_NX.jpeg"
+
+NARANJA_X_ID = "https://www.naranjax.com/#OrgNaranjaX"
 
 ORGANIZATIONS: Dict[str, Dict[str, object]] = {
+    # Marca: concentra la identidad de entidad (sameAs) y publica el sitio.
+    "naranja_x": {
+        "@type": "Organization",
+        "@id": NARANJA_X_ID,
+        "name": "Naranja X",
+        "url": "https://www.naranjax.com/",
+        "logo": {
+            "@type": "ImageObject",
+            "@id": "https://www.naranjax.com/#LogoNaranjaX",
+            "url": _LOGO_URL,
+            "contentUrl": _LOGO_URL,
+        },
+        "sameAs": list(ORG_SAME_AS),
+        # Sin subOrganization: cada página emite solo la emisora que interviene
+        # en ese producto, así que listar ambas dejaría un @id sin resolver en
+        # el grafo. La relación ya la declara parentOrganization desde la
+        # emisora, que siempre está presente cuando se la referencia.
+    },
+    # Emisoras: entidades legales. CUIT propio, sin perfiles sociales.
     "tarjeta_naranja": {
         "@type": "Organization",
         "@id": "https://www.naranjax.com/#OrgTarjetaNaranja",
@@ -47,10 +90,11 @@ ORGANIZATIONS: Dict[str, Dict[str, object]] = {
         "logo": {
             "@type": "ImageObject",
             "@id": "https://www.naranjax.com/#LogoTarjetaNaranja",
-            "url": "https://images.ctfassets.net/yxlyq25bynna/1IxKUBv3dtISflaWQoSIZW/11e239808ff23ee64b26ba44bfcd93a0/Logo_NX.jpeg",
-            "contentUrl": "https://images.ctfassets.net/yxlyq25bynna/1IxKUBv3dtISflaWQoSIZW/11e239808ff23ee64b26ba44bfcd93a0/Logo_NX.jpeg",
+            "url": _LOGO_URL,
+            "contentUrl": _LOGO_URL,
         },
-        "sameAs": list(ORG_SAME_AS),
+        "parentOrganization": {"@id": NARANJA_X_ID},
+        "brand": {"@id": NARANJA_X_ID},
         "identifier": {
             "@type": "PropertyValue",
             "propertyID": "CUIT",
@@ -65,36 +109,15 @@ ORGANIZATIONS: Dict[str, Dict[str, object]] = {
         "logo": {
             "@type": "ImageObject",
             "@id": "https://www.naranjax.com/#LogoNaranjaDigital",
-            "url": "https://images.ctfassets.net/yxlyq25bynna/1IxKUBv3dtISflaWQoSIZW/11e239808ff23ee64b26ba44bfcd93a0/Logo_NX.jpeg",
-            "contentUrl": "https://images.ctfassets.net/yxlyq25bynna/1IxKUBv3dtISflaWQoSIZW/11e239808ff23ee64b26ba44bfcd93a0/Logo_NX.jpeg",
+            "url": _LOGO_URL,
+            "contentUrl": _LOGO_URL,
         },
-        "sameAs": list(ORG_SAME_AS),
+        "parentOrganization": {"@id": NARANJA_X_ID},
+        "brand": {"@id": NARANJA_X_ID},
         "identifier": {
             "@type": "PropertyValue",
             "propertyID": "CUIT",
-            "value": "30-68537634-9",
-        },
-    },
-    "naranja_x": {
-        "@type": "Organization",
-        "@id": "https://www.naranjax.com/#OrgNaranjaX",
-        "name": "Naranja X",
-        "url": "https://www.naranjax.com/",
-        "logo": {
-            "@type": "ImageObject",
-            "@id": "https://www.naranjax.com/#LogoNaranjaX",
-            "url": "https://images.ctfassets.net/yxlyq25bynna/1IxKUBv3dtISflaWQoSIZW/11e239808ff23ee64b26ba44bfcd93a0/Logo_NX.jpeg",
-            "contentUrl": "https://images.ctfassets.net/yxlyq25bynna/1IxKUBv3dtISflaWQoSIZW/11e239808ff23ee64b26ba44bfcd93a0/Logo_NX.jpeg",
-        },
-        "sameAs": [
-            *ORG_SAME_AS,
-            "https://www.linkedin.com/company/naranja-x/",
-            "https://twitter.com/naranjax",
-        ],
-        "identifier": {
-            "@type": "PropertyValue",
-            "propertyID": "CUIT",
-            "value": "30-68537634-9",
+            "value": "30-71663964-5",
         },
     },
 }
@@ -127,7 +150,8 @@ WEBPAGE_DEFAULTS = {
         "@type": "WebSite",
         "@id": "https://www.naranjax.com/#website",
     },
-    "publisher": {"@id": ORGANIZATIONS["tarjeta_naranja"]["@id"]},
+    # El sitio lo publica la marca, no una de las emisoras.
+    "publisher": {"@id": ORGANIZATIONS["naranja_x"]["@id"]},
 }
 
 # Entidades temáticas por tipo de schema (about de la WebPage) ----------------
@@ -199,8 +223,10 @@ INSURANCE_AGENCY_DEFAULTS = {
             "propertyID": "CUIT",
             "value": "30-68537634-9",
         },
+        # Sin "id": era un typo por "@id" y schema.org no define la propiedad
+        # `id`, así que el expandido JSON-LD la descartaba. Además duplicaba
+        # `url`; un @id de nodo no es la URL del archivo.
         "logo": {
-            "id": "https://images.ctfassets.net/yxlyq25bynna/1IxKUBv3dtISflaWQoSIZW/11e239808ff23ee64b26ba44bfcd93a0/Logo_NX.jpeg",
             "url": "https://images.ctfassets.net/yxlyq25bynna/1IxKUBv3dtISflaWQoSIZW/11e239808ff23ee64b26ba44bfcd93a0/Logo_NX.jpeg",
             "contentUrl": "https://images.ctfassets.net/yxlyq25bynna/1IxKUBv3dtISflaWQoSIZW/11e239808ff23ee64b26ba44bfcd93a0/Logo_NX.jpeg",
         },

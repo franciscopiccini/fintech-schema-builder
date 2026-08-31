@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional
 from ..config import INVESTMENT_OR_DEPOSIT_DEFAULTS, default_price_valid_until
 from ..models import SchemaContext
 from .base import (
+    append_brand_organization,
     append_organization,
     build_faq_page,
     build_offer_node,
@@ -134,6 +135,7 @@ def build_investment_or_deposit_graph(
     graph.append(investment_node)
 
     append_organization(graph, provider, added_orgs)
+    append_brand_organization(graph, added_orgs)
 
     price_valid_until = default_price_valid_until()
 

@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional
 from ..config import default_price_valid_until
 from ..models import SchemaContext
 from .base import (
+    append_brand_organization,
     append_organization,
     build_faq_page,
     build_offer_node,
@@ -94,5 +95,6 @@ def build_event_graph(
     graph.append(build_webpage_node(ctx))
 
     append_organization(graph, organizer_org, added_orgs)
+    append_brand_organization(graph, added_orgs)
 
     return graph

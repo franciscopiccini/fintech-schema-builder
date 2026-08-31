@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Optional
 from ..config import DEFAULT_LANGUAGE
 from ..models import SchemaContext
 from .base import (
+    append_brand_organization,
     append_organization,
     build_webpage_node,
     organization_reference,
@@ -93,5 +94,6 @@ def build_blog_posting_graph(
 
     append_organization(graph, author_org, added_orgs)
     append_organization(graph, publisher_org, added_orgs)
+    append_brand_organization(graph, added_orgs)
 
     return graph

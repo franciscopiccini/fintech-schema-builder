@@ -13,6 +13,7 @@ from ..config import (
 )
 from ..models import SchemaContext
 from .base import (
+    append_brand_organization,
     append_organization,
     build_faq_page,
     build_offer_node,
@@ -109,6 +110,7 @@ def build_financial_product_graph(
     graph.append(financial_product)
 
     append_organization(graph, provider, added_orgs)
+    append_brand_organization(graph, added_orgs)
 
     price_valid_until = default_price_valid_until()
 
