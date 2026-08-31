@@ -60,6 +60,19 @@ ORG_SAME_AS = [
 
 _LOGO_URL = "https://images.ctfassets.net/yxlyq25bynna/1IxKUBv3dtISflaWQoSIZW/11e239808ff23ee64b26ba44bfcd93a0/Logo_NX.jpeg"
 
+# Un unico nodo de logo compartido. Las tres orgs usan el mismo archivo, así que
+# darle un @id distinto a cada una declaraba tres ImageObject separados
+# afirmando ser la misma imagen. Con un solo @id el grafo dice lo que es: una
+# imagen, referenciada desde varias organizaciones.
+LOGO_ID = "https://www.naranjax.com/#Logo"
+
+LOGO_NODE: Dict[str, object] = {
+    "@type": "ImageObject",
+    "@id": LOGO_ID,
+    "url": _LOGO_URL,
+    "contentUrl": _LOGO_URL,
+}
+
 NARANJA_X_ID = "https://www.naranjax.com/#OrgNaranjaX"
 
 ORGANIZATIONS: Dict[str, Dict[str, object]] = {
@@ -69,12 +82,8 @@ ORGANIZATIONS: Dict[str, Dict[str, object]] = {
         "@id": NARANJA_X_ID,
         "name": "Naranja X",
         "url": "https://www.naranjax.com/",
-        "logo": {
-            "@type": "ImageObject",
-            "@id": "https://www.naranjax.com/#LogoNaranjaX",
-            "url": _LOGO_URL,
-            "contentUrl": _LOGO_URL,
-        },
+        # La marca define el nodo completo; las emisoras lo referencian por @id.
+        "logo": dict(LOGO_NODE),
         "sameAs": list(ORG_SAME_AS),
         # Sin subOrganization: cada página emite solo la emisora que interviene
         # en ese producto, así que listar ambas dejaría un @id sin resolver en
@@ -87,12 +96,7 @@ ORGANIZATIONS: Dict[str, Dict[str, object]] = {
         "@id": "https://www.naranjax.com/#OrgTarjetaNaranja",
         "name": "Tarjeta Naranja S.A.U.",
         "url": "https://www.naranjax.com/",
-        "logo": {
-            "@type": "ImageObject",
-            "@id": "https://www.naranjax.com/#LogoTarjetaNaranja",
-            "url": _LOGO_URL,
-            "contentUrl": _LOGO_URL,
-        },
+        "logo": {"@id": LOGO_ID},
         "parentOrganization": {"@id": NARANJA_X_ID},
         "brand": {"@id": NARANJA_X_ID},
         "identifier": {
@@ -106,12 +110,7 @@ ORGANIZATIONS: Dict[str, Dict[str, object]] = {
         "@id": "https://www.naranjax.com/#OrgNaranjaDigital",
         "name": "Naranja Digital Compañía Financiera S.A.U.",
         "url": "https://www.naranjax.com/",
-        "logo": {
-            "@type": "ImageObject",
-            "@id": "https://www.naranjax.com/#LogoNaranjaDigital",
-            "url": _LOGO_URL,
-            "contentUrl": _LOGO_URL,
-        },
+        "logo": {"@id": LOGO_ID},
         "parentOrganization": {"@id": NARANJA_X_ID},
         "brand": {"@id": NARANJA_X_ID},
         "identifier": {
