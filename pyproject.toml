@@ -22,6 +22,11 @@ dev = [
     "pytest>=7.4.0,<9.0",
     "requests-mock>=1.11.0,<2.0",
 ]
+# Solo para mcp_server.py. El SDK 2.x renombro FastMCP a MCPServer, asi que la
+# version importa: con mcp<2 el import del servidor falla.
+mcp = [
+    "mcp>=2.0.0,<3.0",
+]
 
 [build-system]
 requires = ["setuptools>=64", "wheel"]
