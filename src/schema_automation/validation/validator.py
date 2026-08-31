@@ -42,6 +42,9 @@ VALID_SCHEMA_TYPES: Set[str] = {
     "PropertyValue",
     "WebSite",
     "Thing",
+    # Usados por el builder de Event; ambos existen en el vocabulario oficial.
+    "Event",
+    "VirtualLocation",
 }
 
 # Campos requeridos por tipo de schema
@@ -281,6 +284,18 @@ class SchemaValidator:
                     if isinstance(item, dict) and "@id" in item:
                         self._referenced_ids.add(item["@id"])
 
+    @staticmethod
+    def _is_reference(value: Dict[str, Any]) -> bool:
+        """Indica si el objeto es una referencia a otro nodo y no una definición.
+
+        En JSON-LD ``{"@id": "...#OrgNaranjaX"}`` apunta a un nodo definido en
+        otra parte del grafo; los campos reales viven allí. Puede traer ``@type``
+        como pista sin dejar de ser una referencia. Validarle los campos
+        requeridos daría un falso error por cada `publisher`, `author` o `brand`
+        expresado por @id, que es justamente la forma recomendada.
+        """
+        return "@id" in value and not (set(value) - {"@id", "@type"})
+
     def _validate_nested_nodes(self, node: Dict[str, Any], path: str) -> None:
         """Valida nodos anidados recursivamente."""
         for key, value in node.items():
@@ -288,11 +303,13 @@ class SchemaValidator:
                 continue
 
             if isinstance(value, dict) and "@type" in value:
-                self._validate_node(value, f"{path}.{key}")
+                if not self._is_reference(value):
+                    self._validate_node(value, f"{path}.{key}")
             elif isinstance(value, list):
                 for idx, item in enumerate(value):
                     if isinstance(item, dict) and "@type" in item:
-                        self._validate_node(item, f"{path}.{key}[{idx}]")
+                        if not self._is_reference(item):
+                            self._validate_node(item, f"{path}.{key}[{idx}]")
 
     def _validate_escaping(self, value: Any, path: str) -> None:
         """Recorre los valores string buscando contenido que Google reinterpreta.

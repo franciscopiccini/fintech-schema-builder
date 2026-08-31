@@ -7,7 +7,7 @@ import re
 from copy import deepcopy
 from typing import Any, Dict, Optional
 
-from ..config import DEFAULT_AGG_RATING, TOPICAL_ENTITIES
+from ..config import TOPICAL_ENTITIES
 from ..extraction import extract_basic_meta, extract_body_text, extract_faqs
 from ..extraction.html import ensure_soup
 from ..infrastructure.http import fetch_html
@@ -109,8 +109,10 @@ def build_schema_from_url(
     image_url = meta.get("image", "") or ""
     description_text = meta.get("description", "") or ""
 
-    agg_source = aggregate_rating if aggregate_rating is not None else DEFAULT_AGG_RATING
-    agg_rating = deepcopy(agg_source) if agg_source else None
+    # Sin aggregateRating por defecto: solo se emite si el caller pasa uno
+    # explícitamente, respaldado por reviews reales. Emitir un rating inventado
+    # es structured data engañoso y expone el sitio a una acción manual.
+    agg_rating = deepcopy(aggregate_rating) if aggregate_rating else None
     if agg_rating is not None:
         agg_rating.setdefault("@type", "AggregateRating")
 
